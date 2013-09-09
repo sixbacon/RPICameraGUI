@@ -1,5 +1,8 @@
-# Bill Grainger June 2013
-# I learn alot used to create this from various articles on stackoverflow forum
+# Explore the Raspberry Pi Camera in a GUI
+# the cmd line instruction used to generate the photo is shown below the photo
+# Bill Grainger June 2013 updated Sept 2013
+
+# I learnt a lot about python to create this from various articles on stackoverflow forum
 # and image_viewer2.py by created on 03-20-2010 by Mike Driscoll
 
 
@@ -55,7 +58,10 @@ class ViewerPanel(wx.Panel):
         self.cbsa=wx.CheckBox(self.CS, -1, '-sa ', (xoffset, 290))
         self.cbrot=wx.CheckBox(self.CS, -1, '-rot ', (xoffset, 320))
         self.cbex=wx.CheckBox(self.CS, -1, '-ex ', (xoffset, 350))
-
+        self.cbev=wx.CheckBox(self.CS, -1, '-ev ', (xoffset, 380))
+        self.cbawb=wx.CheckBox(self.CS, -1, '-awb ', (xoffset, 410))
+        self.cbifx=wx.CheckBox(self.CS, -1, '-ifx ', (xoffset, 440))
+        
         # default is to save to a file and have a 1 second delay
         self.cbo.SetValue(True)
         self.cbt.SetValue(True)
@@ -70,13 +76,21 @@ class ViewerPanel(wx.Panel):
         self.scco = wx.SpinCtrl(self.CS, -1, str(0), (xoffset+40, 225), (60, -1), min=-100, max=100)
         self.scbr = wx.SpinCtrl(self.CS, -1, str(0), (xoffset+40, 255), (60, -1), min=0, max=100)
         self.scsa = wx.SpinCtrl(self.CS, -1, str(0), (xoffset+40, 285), (60, -1), min=-100, max=100)
-        self.scrot = wx.SpinCtrl(self.CS, -1, str(0), (xoffset+40, 315), (60, -1), min=0, max=359)
-       
+
+        rotmodes = ['0','90','180','270']
+        self.scrot = wx.ComboBox(self.CS, -1, pos=(xoffset+40, 315), size=(90, -1), choices=rotmodes, style=wx.CB_READONLY)
         exposuremodes = ['off','auto','night','nightpreview','backlight',
                          'spotlight','sports','snow','beach','verylong','fixedfps','antishake','fireworks']
-        self.scex =wx.ComboBox(self.CS, -1, pos=(xoffset+40, 345), size=(90, -1), choices=exposuremodes, style=wx.CB_READONLY)
+        self.scex = wx.ComboBox(self.CS, -1, pos=(xoffset+40, 345), size=(90, -1), choices=exposuremodes, style=wx.CB_READONLY)
+        self.scev = wx.SpinCtrl(self.CS, -1, str(0), (xoffset+40, 375), (60, -1), min=-10, max=10)
+
+        awbmodes = ['off','auto','sun','cloudshade','tungsten','fluorescent','incandescent','flash','horizon']
+        self.scawb = wx.ComboBox(self.CS, -1, pos=(xoffset+40, 405), size=(90, -1), choices=awbmodes, style=wx.CB_READONLY)
+        ifxmodes = ['none','negative','solarise','whiteboard','blackboard','sketch','denoise','emboss','oilpaint',
+                      'hatch','gpen','pastel','watercolour','film','blur']
+        self.scifx = wx.ComboBox(self.CS, -1, pos=(xoffset+40, 435), size=(90, -1), choices=ifxmodes, style=wx.CB_READONLY)
         
-        wx.Button(self.CS, 1, 'Take Photo', (20, 380))
+        wx.Button(self.CS, 1, 'Take Photo', (30, 470))
 
         # add brief explanations of settings
         wx.StaticText(self.CS, -1, 'DETAILS', (xcomoffset,1))
@@ -89,9 +103,12 @@ class ViewerPanel(wx.Panel):
         wx.StaticText(self.CS, -1,'contrast     -100 - 100' , (xcomoffset,230))
         wx.StaticText(self.CS, -1,'brightness      0 - 100' , (xcomoffset,260))
         wx.StaticText(self.CS, -1,'saturation   -100 - 100' , (xcomoffset,290))
-        wx.StaticText(self.CS, -1,'rotate image    0 - 359' , (xcomoffset,320))
+        wx.StaticText(self.CS, -1,'rotate image' , (xcomoffset,320))
         wx.StaticText(self.CS, -1,'exposure mode' , (xcomoffset,350))
-
+        wx.StaticText(self.CS, -1,'exposure compensation -10 - 10' , (xcomoffset,380))
+        wx.StaticText(self.CS, -1,'automatic white balance' , (xcomoffset,410))
+        wx.StaticText(self.CS, -1,'image effect' , (xcomoffset,440))
+ 
         # when happy take a new picture
         self.Bind(wx.EVT_BUTTON, self.TakePic, id=1)
         
@@ -111,8 +128,7 @@ class ViewerPanel(wx.Panel):
         if self.cbq.GetValue() :
             self.cmdln=self.cmdln + '-q ' + str(self.scq.GetValue())+' '
         if self.cbt.GetValue() :
-            self.cmdln=self.cmdln + '-t ' + str(self.sct.GetValue())+' '
-        
+            self.cmdln=self.cmdln + '-t ' + str(self.sct.GetValue())+' '      
         if self.cbsh.GetValue() :
             self.cmdln=self.cmdln + '-sh ' + str(self.scsh.GetValue())+' '
         if self.cbco.GetValue() :
@@ -125,8 +141,13 @@ class ViewerPanel(wx.Panel):
             self.cmdln=self.cmdln + '-rot ' + str(self.scrot.GetValue())+' '
         if self.cbex.GetValue() :
             self.cmdln=self.cmdln + '-ex ' + str(self.scex.GetValue())+' '
-            
-        
+        if self.cbev.GetValue() :
+            self.cmdln=self.cmdln + '-ev ' + str(self.scev.GetValue())+' '    
+        if self.cbawb.GetValue() :
+            self.cmdln=self.cmdln + '-awb ' + str(self.scawb.GetValue())+' '
+        if self.cbifx.GetValue() :
+            self.cmdln=self.cmdln + '-ifx ' + str(self.scifx.GetValue())+' '
+    
         defaultfilename = str(self.oname.GetValue())
         
         # call external program ro take a picture
